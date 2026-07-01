@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#08070c">
+<meta name="description" content="Sya Ai — asisten AI cerdas berbahasa Indonesia, ditenagai Cutad API Gateway.">
+<title>Sya Ai — Asisten Cerdas</title>
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%23120f1f%22/><path d=%22M16 6l2.5 6.9L26 15l-7.5 2.6L16 24l-2.5-6.4L6 15l7.5-2.1z%22 fill=%22%23a78bfa%22/></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="app">
+
+<!-- Mobile overlay -->
+<div id="mobile-overlay" class="overlay" hidden></div>
+
+<!-- Sidebar -->
+<aside id="sidebar" class="sidebar" aria-label="Riwayat percakapan">
+  <div class="sidebar-head">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z" fill="currentColor"/></svg>
+      </span>
+      <span class="brand-name">Sya Ai</span>
+    </div>
+    <button id="btn-close-sidebar" class="icon-btn only-mobile" aria-label="Tutup sidebar">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <div class="sidebar-actions">
+    <button id="btn-new-chat" class="btn-primary btn-block">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Chat baru
+    </button>
+  </div>
+
+  <div class="sidebar-search">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <input id="search-input" type="text" placeholder="Cari percakapan…" autocomplete="off" aria-label="Cari percakapan">
+  </div>
+
+  <nav id="chat-history-list" class="history-list" aria-label="Daftar chat"></nav>
+
+  <div id="history-empty" class="history-empty" hidden>
+    <p>Belum ada percakapan.</p>
+  </div>
+
+  <div class="sidebar-foot">
+    <span class="foot-meta">Tersimpan di perangkat ini</span>
+    <button id="btn-clear-all" class="icon-btn" title="Hapus semua data" aria-label="Hapus semua data">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13a2 2 0 002 2h4a2 2 0 002-2l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button id="btn-open-sidebar" class="icon-btn only-mobile" aria-label="Buka sidebar">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+
+      <div class="select-wrap">
+        <select id="model-selector" aria-label="Pilih model AI">
+          <option>Memuat model…</option>
+        </select>
+        <svg class="select-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <span id="api-status" class="status-dot status-unknown" title="Memeriksa koneksi…"></span>
+    </div>
+  </header>
+
+  <div id="chat-container" class="chat-container">
+    <div id="messages-wrapper" class="messages-wrapper">
+      <div id="welcome-screen" class="welcome">
+        <span class="welcome-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z" fill="currentColor"/></svg>
+        </span>
+        <h1>Halo, saya Sya Ai</h1>
+        <p>Tanya apa saja — mulai dari menjelaskan sesuatu, menulis kode, sampai brainstorming ide.</p>
+        <div class="suggestions" id="suggestions"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="scroll-to-bottom" class="scroll-fab" hidden aria-label="Ke bawah">
+    <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+
+  <footer class="composer">
+    <div class="composer-inner">
+      <div id="stop-btn-container" class="stop-wrap" hidden>
+        <button id="btn-stop" class="btn-stop">
+          <svg viewBox="0 0 24 24" width="12" height="12"><rect x="4" y="4" width="16" height="16" rx="2" fill="currentColor"/></svg>
+          Hentikan
+        </button>
+      </div>
+
+      <form id="chat-form" class="composer-form">
+        <textarea
+          id="chat-input"
+          rows="1"
+          placeholder="Tanya Sya Ai apa saja…"
+          aria-label="Tulis pesan"
+        ></textarea>
+        <button type="submit" id="submit-btn" class="btn-send" aria-label="Kirim pesan" disabled>
+          <svg id="send-icon" viewBox="0 0 24 24"><path d="M5 12l14-7-4 7 4 7-14-7z" fill="currentColor"/></svg>
+          <svg id="loading-icon" class="spin" viewBox="0 0 24 24" hidden><path d="M12 3a9 9 0 100 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>
+        </button>
+      </form>
+      <p class="composer-hint">Sya Ai bisa saja salah. Cek info penting. · Ditenagai Cutad API Gateway</p>
+    </div>
+  </footer>
+</main>
+
+<div id="toast-region" class="toast-region" aria-live="polite"></div>
+
+<!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+<!-- App -->
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/markdown.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
